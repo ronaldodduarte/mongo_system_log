@@ -33,7 +33,8 @@ class LogThisTestCase(TestCase):
     def test_error_method_must_call_logging_error(self, mock_logging_error, mock_mongodb_connection):
         self.log.error('error test')
         mock_mongodb_connection.return_value = self.mongo_cli
-        mock_logging_error.assert_called_with(f"Message:error test, Module:test_system_log, App:{argv[0]}")
+        expected = f"Message:error test, Module:test_system_log, App:{argv[0]}, Payload:None, Result:None"
+        mock_logging_error.assert_called_with(expected)
 
     @patch('mongo_system_log.system_log.ConnectMongo')
     @patch('mongo_system_log.system_log.datetime')
@@ -46,7 +47,9 @@ class LogThisTestCase(TestCase):
             'Date': self.date,
             'Severity': 'ERROR', 'HostName': 'HostNameTest', 'MsgError': 'error test', 'Ip': '127.0.0.1',
             'ModuleCalled': 'test_system_log',
-            'App': argv[0]
+            'App': argv[0],
+            'Payload': None,
+            'Result': None
         }
         mock_insert_db.assert_called_with(expected)
 
@@ -64,9 +67,13 @@ class LogThisTestCase(TestCase):
         msg = 'error test'
         expected = {
             'Date': self.date,
-            'Severity': 'ERROR', 'HostName': 'HostNameTest', 'MsgError': 'error test', 'Ip': '127.0.0.1',
+            'Severity': 'ERROR', 'HostName': 'HostNameTest', 'MsgError': 'error test',
+            'Payload': None,
+            'Result': None,
+            'Ip': '127.0.0.1',
             'ModuleCalled': 'test_system_log',
             'App': argv[0]
+
         }
         mock_mongodb_connection.return_value = self.mongo_cli
         mock_datetime.now.return_value = self.date
@@ -148,3 +155,58 @@ class LogThisTestCase(TestCase):
         expected = 'N/A'
         host = LogThis(get_module_name()).get_hostname()
         self.assertEqual(expected, host)
+
+    @patch('mongo_system_log.system_log.ConnectMongo')
+    @patch('mongo_system_log.system_log.logging.critical')
+    def test_critical_method_must_call_logging_error(self, mock_logging_critical, mock_mongodb_connection):
+        self.log.critical('critical test')
+        mock_mongodb_connection.return_value = self.mongo_cli
+        expected = f"Message:critical test, Module:test_system_log, App:{argv[0]}, Payload:None, Result:None"
+        mock_logging_critical.assert_called_with(expected)
+
+    @patch('mongo_system_log.system_log.ConnectMongo')
+    @patch('mongo_system_log.system_log.datetime')
+    @patch('pymongo.collection.Collection.insert_one')
+    def test_critical_method_must_call_insert_one_method(self, mock_insert_db, mock_datetime, mock_mongodb_connection):
+        mock_mongodb_connection.return_value = self.mongo_cli
+        mock_datetime.now.return_value = self.date
+        self.log.critical('critical test')
+        expected = {
+            'Date': self.date,
+            'Severity': 'CRITICAL', 'HostName': 'HostNameTest', 'MsgError': 'critical test',
+            'Payload': None,
+            'Result': None,
+            'Ip': '127.0.0.1',
+            'ModuleCalled': 'test_system_log',
+            'App': argv[0],
+
+        }
+        mock_insert_db.assert_called_with(expected)
+
+    @patch('mongo_system_log.system_log.ConnectMongo')
+    @patch('mongo_system_log.system_log.datetime')
+    @patch('mongo_system_log.system_log.logging.error')
+    @patch('pymongo.collection.Collection.insert_one')
+    def test_critical_method_when_insert_one_method_make_an_exception_should_log_it_on_console(
+            self,
+            mock_insert_db,
+            mock_logging_critical,
+            mock_datetime,
+            mock_mongodb_connection
+    ):
+        msg = 'critical test'
+        expected = {
+            'Date': self.date,
+            'Severity': 'CRITICAL', 'HostName': 'HostNameTest', 'MsgError': 'critical test',
+            'Payload': None,
+            'Result': None,
+            'Ip': '127.0.0.1',
+            'ModuleCalled': 'test_system_log',
+            'App': argv[0]
+
+        }
+        mock_mongodb_connection.return_value = self.mongo_cli
+        mock_datetime.now.return_value = self.date
+        mock_insert_db.side_effect = Exception('Connection error')
+        self.log.critical(msg)
+        mock_logging_critical.assert_called_with(f'Fail to send log for MongoDb - Connection error, Message:{expected}')

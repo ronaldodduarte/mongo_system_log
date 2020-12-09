@@ -38,7 +38,7 @@ class LogThis:
             'Severity': 'INFO',
             'MsgInfo': msg,
             'Payload': payload,
-            'Result': result,
+            'Result': result
         }
         msg_info.update(self.default_fields)
         try:
@@ -48,13 +48,15 @@ class LogThis:
             msg_info['Severity'] = 'ERROR'
             logging.error(f'Fail to send log for MongoDb - {e}, Message:{msg_info}')
 
-    def error(self, msg):
-        logging.error(f'Message:{msg}, Module:{self.module}, App:{self.app}')
+    def error(self, msg, payload=None, result=None):
+        logging.error(f'Message:{msg}, Module:{self.module}, App:{self.app}, Payload:{payload}, Result:{result}')
         msg_error = {
             'Date': datetime.now(),
             'Severity': 'ERROR',
             'HostName': self.hostname,
             'MsgError': msg,
+            'Payload': payload,
+            'Result': result
         }
         msg_error.update(self.default_fields)
         try:
@@ -62,6 +64,23 @@ class LogThis:
             mongodb_connection.error_collection.insert_one(msg_error)
         except Exception as e:
             logging.error(f'Fail to send log for MongoDb - {e}, Message:{msg_error}')
+
+    def critical(self, msg, payload=None, result=None):
+        logging.critical(f'Message:{msg}, Module:{self.module}, App:{self.app}, Payload:{payload}, Result:{result}')
+        msg_critical = {
+            'Date': datetime.now(),
+            'Severity': 'CRITICAL',
+            'HostName': self.hostname,
+            'MsgError': msg,
+            'Payload': payload,
+            'Result': result
+        }
+        msg_critical.update(self.default_fields)
+        try:
+            mongodb_connection = ConnectMongo()
+            mongodb_connection.critical_collection.insert_one(msg_critical)
+        except Exception as e:
+            logging.error(f'Fail to send log for MongoDb - {e}, Message:{msg_critical}')
 
     @staticmethod
     def get_hostname():

@@ -24,3 +24,4 @@ class ConnectMongo(object):
         self.db = self.client[MONGO_DB]
         self.error_collection = self.db['error']
         self.info_collection = self.db['info']
+        self.critical_collection = self.db['critical']

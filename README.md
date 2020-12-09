@@ -1,18 +1,22 @@
-The idea behind this package is possibility to you use some client or something like the Metabase for collect and analyse logs of your application. Its need two environments variables:  
+The idea behind this package is possibility to you use some client or something like the Metabase for collect and analyse logs of your application.  
+  
+Its need two environments variables:  
 * MONGO_DB  
-* MONGO_URL    
+* MONGO_URL      
 
-Its works with two collections:  
+Its works with three collections:  
 * error  
-* info
+* info  
+* critical
 
-sample  
+Sample:
 ~~~python
 from mongo_system_log import *
 log = LogThis(get_module_name())
-log.error('error message')
-log.info('info message')
+log.info('error message', payload='payload', result='result')
+log.error('error message', payload='payload', result='result')
+log.critical('error message', payload='payload', result='result')
 ~~~
 get_module_name()  
-* This function gets module and file name that called it. Must be called on instantiate the LogThis class.
-
+* This function gets module and file name that called it. Must be called on instantiate the LogThis class.  
+The arguments **payload** and **result** has default value None.
