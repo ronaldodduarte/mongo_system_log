@@ -45,15 +45,14 @@ class LogThis:
             mongodb_connection = ConnectMongo()
             mongodb_connection.info_collection.insert_one(msg_info)
         except Exception as e:
-            msg_info['Severity'] = 'ERROR'
-            logging.error(f'Fail to send log for MongoDb - {e}, Message:{msg_info}')
+            msg_info['Severity'] = 'CRITICAL'
+            logging.critical(f'Fail to send log for MongoDb - {e}, Message:{msg_info}')
 
     def error(self, msg, payload=None, result=None):
         logging.error(f'Message:{msg}, Module:{self.module}, App:{self.app}, Payload:{payload}, Result:{result}')
         msg_error = {
             'Date': datetime.now(),
             'Severity': 'ERROR',
-            'HostName': self.hostname,
             'MsgError': msg,
             'Payload': payload,
             'Result': result
@@ -63,14 +62,14 @@ class LogThis:
             mongodb_connection = ConnectMongo()
             mongodb_connection.error_collection.insert_one(msg_error)
         except Exception as e:
-            logging.error(f'Fail to send log for MongoDb - {e}, Message:{msg_error}')
+            msg_error['Severity'] = 'CRITICAL'
+            logging.critical(f'Fail to send log for MongoDb - {e}, Message:{msg_error}')
 
     def critical(self, msg, payload=None, result=None):
         logging.critical(f'Message:{msg}, Module:{self.module}, App:{self.app}, Payload:{payload}, Result:{result}')
         msg_critical = {
             'Date': datetime.now(),
             'Severity': 'CRITICAL',
-            'HostName': self.hostname,
             'MsgError': msg,
             'Payload': payload,
             'Result': result
@@ -80,7 +79,7 @@ class LogThis:
             mongodb_connection = ConnectMongo()
             mongodb_connection.critical_collection.insert_one(msg_critical)
         except Exception as e:
-            logging.error(f'Fail to send log for MongoDb - {e}, Message:{msg_critical}')
+            logging.critical(f'Fail to send log for MongoDb - {e}, Message:{msg_critical}')
 
     @staticmethod
     def get_hostname():

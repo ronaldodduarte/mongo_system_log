@@ -15,6 +15,7 @@ class MongoConnectionHelper:
         self.db = self.client['test']
         self.error_collection = self.db['error']
         self.info_collection = self.db['info']
+        self.critical_collection = self.db['critical']
 
 
 class LogThisTestCase(TestCase):
@@ -55,22 +56,23 @@ class LogThisTestCase(TestCase):
 
     @patch('mongo_system_log.system_log.ConnectMongo')
     @patch('mongo_system_log.system_log.datetime')
-    @patch('mongo_system_log.system_log.logging.error')
+    @patch('mongo_system_log.system_log.logging.critical')
     @patch('pymongo.collection.Collection.insert_one')
     def test_error_method_when_insert_one_method_make_an_exception_should_log_it_on_console(
             self,
             mock_insert_db,
-            mock_logging_error,
+            mock_logging_critical,
             mock_datetime,
             mock_mongodb_connection
     ):
         msg = 'error test'
         expected = {
             'Date': self.date,
-            'Severity': 'ERROR', 'HostName': 'HostNameTest', 'MsgError': 'error test',
+            'Severity': 'CRITICAL', 'MsgError': 'error test',
             'Payload': None,
             'Result': None,
             'Ip': '127.0.0.1',
+            'HostName': 'HostNameTest',
             'ModuleCalled': 'test_system_log',
             'App': argv[0]
 
@@ -79,7 +81,7 @@ class LogThisTestCase(TestCase):
         mock_datetime.now.return_value = self.date
         mock_insert_db.side_effect = Exception('Connection error')
         self.log.error(msg)
-        mock_logging_error.assert_called_with(f'Fail to send log for MongoDb - Connection error, Message:{expected}')
+        mock_logging_critical.assert_called_with(f'Fail to send log for MongoDb - Connection error, Message:{expected}')
 
     @patch('mongo_system_log.system_log.ConnectMongo')
     @patch('mongo_system_log.system_log.logging.info')
@@ -107,19 +109,19 @@ class LogThisTestCase(TestCase):
 
     @patch('mongo_system_log.system_log.ConnectMongo')
     @patch('mongo_system_log.system_log.datetime')
-    @patch('mongo_system_log.system_log.logging.error')
+    @patch('mongo_system_log.system_log.logging.critical')
     @patch('pymongo.collection.Collection.insert_one')
     def test_info_method_when_insert_one_method_make_an_exception_should_log_it_on_console(
             self,
             mock_insert_db,
-            mock_logging_error,
+            mock_logging_critical,
             mock_datetime,
             mock_mongodb_connection
     ):
         msg = 'info test'
         expected = {
             'Date': self.date,
-            'Severity': 'ERROR', 'MsgInfo': 'info test', 'Payload': None, 'Result': None,
+            'Severity': 'CRITICAL', 'MsgInfo': 'info test', 'Payload': None, 'Result': None,
             'Ip': '127.0.0.1', 'HostName': 'HostNameTest',
             'ModuleCalled': 'test_system_log',
             'App': argv[0]
@@ -128,7 +130,7 @@ class LogThisTestCase(TestCase):
         mock_datetime.now.return_value = self.date
         mock_insert_db.side_effect = Exception('Connection error')
         self.log.info(msg)
-        mock_logging_error.assert_called_with(f'Fail to send log for MongoDb - Connection error, Message:{expected}')
+        mock_logging_critical.assert_called_with(f'Fail to send log for MongoDb - Connection error, Message:{expected}')
 
     @patch('mongo_system_log.system_log.socket')
     @patch('mongo_system_log.system_log.logging.error')
@@ -185,7 +187,7 @@ class LogThisTestCase(TestCase):
 
     @patch('mongo_system_log.system_log.ConnectMongo')
     @patch('mongo_system_log.system_log.datetime')
-    @patch('mongo_system_log.system_log.logging.error')
+    @patch('mongo_system_log.system_log.logging.critical')
     @patch('pymongo.collection.Collection.insert_one')
     def test_critical_method_when_insert_one_method_make_an_exception_should_log_it_on_console(
             self,
@@ -197,10 +199,11 @@ class LogThisTestCase(TestCase):
         msg = 'critical test'
         expected = {
             'Date': self.date,
-            'Severity': 'CRITICAL', 'HostName': 'HostNameTest', 'MsgError': 'critical test',
+            'Severity': 'CRITICAL', 'MsgError': 'critical test',
             'Payload': None,
             'Result': None,
             'Ip': '127.0.0.1',
+            'HostName': 'HostNameTest',
             'ModuleCalled': 'test_system_log',
             'App': argv[0]
 
