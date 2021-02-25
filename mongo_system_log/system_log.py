@@ -31,55 +31,74 @@ class LogThis:
             'App': self.app
         }
 
-    def info(self, msg, payload=None, result=None):
-        logging.info(f'Message:{msg}, Module:{self.module}, App:{self.app}, Payload:{payload}, Result:{result}')
-        msg_info = {
-            'Date': datetime.now(),
-            'Severity': 'INFO',
-            'MsgInfo': msg,
-            'Payload': payload,
-            'Result': result
-        }
-        msg_info.update(self.default_fields)
-        try:
-            mongodb_connection = ConnectMongo()
-            mongodb_connection.info_collection.insert_one(msg_info)
-        except Exception as e:
-            msg_info['Severity'] = 'CRITICAL'
-            logging.critical(f'Fail to send log for MongoDb - {e}, Message:{msg_info}')
+    def info(self, msg, payload=None, result=None, log_console=True, log_detail=True):
 
-    def error(self, msg, payload=None, result=None):
-        logging.error(f'Message:{msg}, Module:{self.module}, App:{self.app}, Payload:{payload}, Result:{result}')
-        msg_error = {
-            'Date': datetime.now(),
-            'Severity': 'ERROR',
-            'MsgError': msg,
-            'Payload': payload,
-            'Result': result
-        }
-        msg_error.update(self.default_fields)
-        try:
-            mongodb_connection = ConnectMongo()
-            mongodb_connection.error_collection.insert_one(msg_error)
-        except Exception as e:
-            msg_error['Severity'] = 'CRITICAL'
-            logging.critical(f'Fail to send log for MongoDb - {e}, Message:{msg_error}')
+        log_id = self._send_mongo('info', msg=msg, payload=payload, result=result)
 
-    def critical(self, msg, payload=None, result=None):
-        logging.critical(f'Message:{msg}, Module:{self.module}, App:{self.app}, Payload:{payload}, Result:{result}')
-        msg_critical = {
+        if not log_id:
+            return None
+
+        if not log_console:
+            return log_id
+
+        if log_detail:
+            logging.info(f'log_id:{log_id}, Message:{msg}, Module:{self.module}, App:{self.app}, '
+                         f'Payload:{payload}, Result:{result}')
+        else:
+            logging.info(f'log_id:{log_id}, Message:{msg}')
+
+        return log_id
+
+    def error(self, msg, payload=None, result=None, log_console=True, log_detail=True):
+        log_id = self._send_mongo('error', msg=msg, payload=payload, result=result)
+        if not log_id:
+            return None
+
+        if not log_console:
+            return log_id
+
+        if log_detail:
+            logging.error(f'log_id:{log_id}, Message:{msg}, Module:{self.module}, App:{self.app}, '
+                          f'Payload:{payload}, Result:{result}')
+        else:
+            logging.error(f'log_id:{log_id}, Message:{msg}')
+
+        return log_id
+
+    def critical(self, msg, payload=None, result=None, log_console=True, log_detail=True):
+        log_id = self._send_mongo('critical', msg=msg, payload=payload, result=result)
+        if not log_id:
+            return None
+
+        if not log_console:
+            return log_id
+
+        if log_detail:
+            logging.critical(f'log_id:{log_id}, Message:{msg}, Module:{self.module}, App:{self.app}, '
+                             f'Payload:{payload}, Result:{result}')
+        else:
+            logging.critical(f'log_id:{log_id}, Message:{msg}')
+
+        return log_id
+
+    def _send_mongo(self, severity, msg, payload, result):
+        _msg = {
             'Date': datetime.now(),
-            'Severity': 'CRITICAL',
-            'MsgError': msg,
+            'Severity': severity.upper(),
+            'Message': msg,
             'Payload': payload,
             'Result': result
         }
-        msg_critical.update(self.default_fields)
+        _msg.update(self.default_fields)
         try:
             mongodb_connection = ConnectMongo()
-            mongodb_connection.critical_collection.insert_one(msg_critical)
+            log_id = mongodb_connection.db[severity].insert_one(_msg).inserted_id
+
+            return log_id
         except Exception as e:
-            logging.critical(f'Fail to send log for MongoDb - {e}, Message:{msg_critical}')
+            _msg['Severity'] = 'CRITICAL'
+            logging.critical(f'Fail to send log for MongoDb - {e}, Message:{_msg}')
+            return None
 
     @staticmethod
     def get_hostname():
@@ -101,4 +120,6 @@ class LogThis:
             logging.error('Fail to get get Ip')
             host_ip = 'N/A'
         return host_ip
+
+
 

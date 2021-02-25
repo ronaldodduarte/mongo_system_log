@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mongo-system-log",
-    version="0.1.1",
+    version="0.1.2",
     author="Ronaldo Duarte",
     author_email="ronaldoduarte@globo.com",
     description="A log package that works with MongoDB.",

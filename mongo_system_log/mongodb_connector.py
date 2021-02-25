@@ -5,6 +5,14 @@ MONGO_URL = getenv('MONGO_URL')
 MONGO_DB = getenv('MONGO_DB')
 
 
+def connect():
+    if not MONGO_URL or not MONGO_DB:
+        raise Exception('Need to setup MONGO_URL and MONGO_DB environments variables')
+
+    client = MongoClient(MONGO_URL, serverSelectionTimeoutMS=5000)
+    return client[MONGO_DB]
+
+
 def singleton(my_class):
     instances = dict()
 
@@ -20,8 +28,8 @@ def singleton(my_class):
 class ConnectMongo(object):
 
     def __init__(self):
-        self.client = MongoClient(MONGO_URL, serverSelectionTimeoutMS=5000)
-        self.db = self.client[MONGO_DB]
-        self.error_collection = self.db['error']
-        self.info_collection = self.db['info']
-        self.critical_collection = self.db['critical']
+        self.mongo_url = MONGO_URL
+        self.mongo_db = MONGO_DB
+        self.db = connect()
+
+
