@@ -26,9 +26,9 @@ Sample:
 ~~~python
 from mongo_system_log import *
 log = LogThis(get_module_name())
-log.info('error message', payload='payload', result='result', log_console=False, log_detail=False)
+log.info('info message', payload='payload', result='result', log_console=False, log_detail=False)
 log.error('error message', payload='payload', result='result')
-log.critical('error message', payload='payload', result='result')
+log.critical('critical message', payload='payload', result='result')
 ~~~
 get_module_name()  
 * This function gets module and file name that called it. Must be called on instantiate the LogThis class.  
