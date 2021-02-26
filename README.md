@@ -33,3 +33,19 @@ log.critical('error message', payload='payload', result='result')
 get_module_name()  
 * This function gets module and file name that called it. Must be called on instantiate the LogThis class.  
 The arguments **payload** and **result** has default value None.
+
+The table fields are:  
+* Ip
+* HostName
+* App - File name that was executed;
+* ModuleCalled - Module name where methods was called;
+* Date -  Date Time on format 2010-12-12 11:41:42,612;
+* Severity -  INFO, ERROR or CRITICAL;
+* Message - The message that want be logged;
+* Payload - A dict that used to call a request for example;
+* Result - A request result.
+
+I suggest that You use the Metabase:  
+https://www.metabase.com/
+
+It is amazing to analyze logs.
