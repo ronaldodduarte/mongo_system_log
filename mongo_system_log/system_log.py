@@ -94,7 +94,7 @@ class LogThis:
             mongodb_connection = ConnectMongo()
             log_id = mongodb_connection.db[severity].insert_one(_msg).inserted_id
 
-            return log_id
+            return str(log_id)
         except Exception as e:
             _msg['Severity'] = 'CRITICAL'
             logging.critical(f'Fail to send log for MongoDb - {e}, Message:{_msg}')
