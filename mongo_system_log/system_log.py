@@ -81,6 +81,23 @@ class LogThis:
 
         return log_id
 
+    def custom(self, payload: dict, collection: str, msg_console='', log_console=True, log_detail=True):
+        """" Test"""
+        log_id = LogThis._send_custom_mongo(collection=collection, payload=payload)
+        if not log_id:
+            return None
+
+        if not log_console and not msg_console:
+            return log_id
+
+        if log_detail:
+            logging.info(f'log_id:{log_id}, Message:{msg_console}, Module:{self.module}, App:{self.app}, '
+                         f'Payload:{payload}, Collection:{collection}')
+        else:
+            logging.info(f'log_id:{log_id}, Message:{msg_console}')
+
+        return log_id
+
     def _send_mongo(self, severity, msg, payload, result):
         _msg = {
             'Date': datetime.now(),
@@ -101,6 +118,17 @@ class LogThis:
             return None
 
     @staticmethod
+    def _send_custom_mongo(collection, payload):
+        try:
+            mongodb_connection = ConnectMongo()
+            log_id = mongodb_connection.db[collection].insert_one(payload).inserted_id
+
+            return str(log_id)
+        except Exception as e:
+            logging.critical(f'Fail to send log for MongoDb - {e}, Payload:{payload}, Collection:{collection}')
+            return None
+
+    @staticmethod
     def get_hostname():
         try:
             host_name = gethostname()
@@ -117,9 +145,6 @@ class LogThis:
             host_ip = s.getsockname()[0]
             s.close()
         except:
-            logging.error('Fail to get get Ip')
+            logging.error('Fail to get Ip')
             host_ip = 'N/A'
         return host_ip
-
-
-

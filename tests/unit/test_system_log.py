@@ -207,6 +207,58 @@ class LogThisTestCase(TestCase):
         LogThis(get_module_name()).critical('msg_critical', log_detail=False)
         mock_log_critical.assert_called_with('log_id:id_mongo, Message:msg_critical')
 
+    @patch('mongo_system_log.system_log.LogThis._send_custom_mongo')
+    def test_custom_method_must_call_send_mongo_method(self, mock_send_mongo):
+        mock_send_mongo.return_value = None
+        LogThis(get_module_name()).custom({'key': 'value'}, 'my_collection')
+        mock_send_mongo.assert_called_with(collection='my_collection', payload={'key': 'value'})
+
+    @patch('mongo_system_log.system_log.logging.info')
+    @patch('mongo_system_log.system_log.LogThis._send_custom_mongo')
+    def test_custom_method_when_send_mongo_method_return_None_should_not_call_logging_info(
+            self,
+            mock_send_mongo,
+            mock_log_info
+    ):
+        mock_send_mongo.return_value = None
+        LogThis(get_module_name()).custom({'key': 'value'}, 'collection')
+        mock_log_info.assert_not_called()
+
+    @patch('mongo_system_log.system_log.logging.info')
+    @patch('mongo_system_log.system_log.LogThis._send_custom_mongo')
+    def test_custom_method_when_send_mongo_method_return_id_mongo_should_call_logging_info(
+            self,
+            mock_send_mongo,
+            mock_log_info
+    ):
+        payload = {'key': 'value'}
+        mock_send_mongo.return_value = 'id_mongo'
+        LogThis(get_module_name()).custom({'key': 'value'}, 'collection')
+        mock_log_info.assert_called_with(f'log_id:id_mongo, Message:, Module:{get_module_name()[0]}, '
+                                         f'App:{get_module_name()[1]}, Payload:{payload}, Collection:collection')
+
+    @patch('mongo_system_log.system_log.logging.info')
+    @patch('mongo_system_log.system_log.LogThis._send_custom_mongo')
+    def test_custom_method_when_send_mongo_method_return_id_mongo_and_log_console_is_False_should_not_call_logging_info(
+            self,
+            mock_send_mongo,
+            mock_log_info
+    ):
+        mock_send_mongo.return_value = 'id_mongo'
+        LogThis(get_module_name()).custom({'key': 'value'}, 'collection', log_console=False)
+        mock_log_info.assert_not_called()
+
+    @patch('mongo_system_log.system_log.logging.info')
+    @patch('mongo_system_log.system_log.LogThis._send_custom_mongo')
+    def test_custom_method_when_send_mongo_method_return_id_mongo_and_log_details_is_False_should_call_logging_info(
+            self,
+            mock_send_mongo,
+            mock_log_info
+    ):
+        mock_send_mongo.return_value = 'id_mongo'
+        LogThis(get_module_name()).custom({'key': 'value'}, 'collection', msg_console='msg_custom', log_detail=False)
+        mock_log_info.assert_called_with('log_id:id_mongo, Message:msg_custom')
+
     @patch('mongo_system_log.system_log.datetime')
     @patch('mongo_system_log.system_log.ConnectMongo')
     @patch('pymongo.collection.Collection.insert_one')
@@ -236,4 +288,25 @@ class LogThisTestCase(TestCase):
         mock_log_critical.assert_called()
         self.assertIsNone(result)
 
+    @patch('mongo_system_log.system_log.ConnectMongo')
+    @patch('pymongo.collection.Collection.insert_one')
+    def test_send_custom_mongo_should_call_insert_one_method(
+            self,
+            mock_insert_one,
+            mock_mongodb_connection
+    ):
+        mock_mongodb_connection.return_value = self.mongo_cli
+        self.log._send_custom_mongo('stat', {'key': 'value'})
+        mock_insert_one.assert_called_with({'key': 'value'})
 
+    @patch('mongo_system_log.system_log.ConnectMongo')
+    @patch('mongo_system_log.system_log.logging.critical')
+    def test_send_custom_mongo_when_receive_an_exception_should_call_logging_critical_and_return_None(
+            self,
+            mock_log_critical,
+            mock_mongodb_connection
+    ):
+        mock_mongodb_connection.side_effect = Exception('an exception occurred')
+        result = self.log._send_custom_mongo('stat', {'key': 'value'})
+        mock_log_critical.assert_called()
+        self.assertIsNone(result)

@@ -34,7 +34,7 @@ get_module_name()
 * This function gets module and file name that called it. Must be called on instantiate the LogThis class.  
 The arguments **payload** and **result** has default value None.
 
-The table fields are:  
+The document fields are:  
 * Ip
 * HostName
 * App - File name that was executed;
@@ -44,6 +44,22 @@ The table fields are:
 * Message - The message that want be logged;
 * Payload - A dict that used to call a request for example;
 * Result - A request result.
+
+### New method:
+**custom**
+
+Arguments:
+* payload - Required
+    * A dict that will be sent to MongoDb;
+* collection - required
+    * The collection that will receive the payload;
+* msg_console - Default is string empty
+    * The message that will be displayed on the console. It will not be sent to MongoDb;
+* log_console - boolean default is True
+    * Enable or disable log console view;
+* log_detail - boolean default is True
+    * If disabled show only mongo_id and message.
+
 
 I suggest that You use the Metabase:  
 https://www.metabase.com/
