@@ -82,7 +82,6 @@ class LogThis:
         return log_id
 
     def custom(self, payload: dict, collection: str, msg_console='', log_console=True, log_detail=True):
-        """" Test"""
         log_id = LogThis._send_custom_mongo(collection=collection, payload=payload)
         if not log_id:
             return None
