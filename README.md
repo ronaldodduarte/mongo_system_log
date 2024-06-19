@@ -26,11 +26,12 @@ Sample:
 ~~~python
 from mongo_system_log import *
 log = LogThis(get_module_name())
-log.info('info message', payload='payload', result='result', log_console=False, log_detail=False)
-log.error('error message', payload='payload', result='result')
-log.critical('critical message', payload='payload', result='result')
+log.info(msg="info message", payload="payload", result="result", log_console=False, log_detail=False)
+log.error(msg="error message", payload="payload", result="result")
+log.critical(msg="critical message", payload="payload", result="result")
+log.custom(payload={"key": "value"}, collection='collection', msg_console="message on console")
 ~~~
-get_module_name()  
+get_module_name()
 * This function gets module and file name that called it. Must be called on instantiate the LogThis class.  
 The arguments **payload** and **result** has default value None.
 
@@ -38,10 +39,10 @@ The document fields are:
 * Ip
 * HostName
 * App - File name that was executed;
-* ModuleCalled - Module name where methods was called;
+* ModuleCalled - Module name that methods where called;
 * Date -  Date Time on format 2010-12-12 11:41:42,612;
 * Severity -  INFO, ERROR or CRITICAL;
-* Message - The message that want be logged;
+* Message - The message that want to be logged;
 * Payload - A dict that used to call a request for example;
 * Result - A request result.
 
