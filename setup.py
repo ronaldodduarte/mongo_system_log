@@ -5,14 +5,14 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mongo-system-log",
-    version="0.1.5",
+    version="0.1.6",
     author="Ronaldo Duarte",
     author_email="ronaldoduarte@globo.com",
     description="A log package that works with MongoDB.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ronaldodduarte/mongo_system_log",
-    install_requires=["pymongo"],
+    install_requires=["pymongo==4.7.3"],
     packages=["mongo_system_log"],
     license="GNU",
     classifiers=[
