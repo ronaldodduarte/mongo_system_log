@@ -13,20 +13,16 @@ def connect():
     return client[MONGO_DB]
 
 
-def singleton(my_class):
-    instances = dict()
+class Singleton(type):
+    __instances = dict()
 
-    def get_instances(*args, **kwargs):
-        if my_class not in instances:
-            instances[my_class] = my_class(*args, *kwargs)
-        return instances[my_class]
-
-    return get_instances
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls.__instances:
+            cls.__instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls.__instances[cls]
 
 
-@singleton
-class ConnectMongo(object):
-
+class ConnectMongo(metaclass=Singleton):
     def __init__(self):
         self.mongo_url = MONGO_URL
         self.mongo_db = MONGO_DB
